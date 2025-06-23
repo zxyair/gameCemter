@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
-@ServerEndpoint(value = "/gamecenter/joinGame/{userId}")
+@ServerEndpoint(value = "/game/joinGame/{userId}")
 public class WebSocket {
     private static final ConcurrentHashMap<String, Object> userLockMap = new ConcurrentHashMap<>();
     private static IGameService gameService;
