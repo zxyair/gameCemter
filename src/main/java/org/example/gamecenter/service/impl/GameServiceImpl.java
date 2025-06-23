@@ -2,12 +2,13 @@ package org.example.gamecenter.service.impl;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
+import org.example.gamecenter.client.proxy.ClientProxy;
 import org.example.gamecenter.event.KafkaRecordhProducer;
 import org.example.gamecenter.pojo.RecordEvent;
-import org.example.gamecenter.pojo.Result;
+import org.example.common.pojo.Result;
 import org.example.gamecenter.service.IGameService;
 import org.example.gamecenter.websocket.WebSocket;
+import org.example.lobbycenter.service.ILobbyRoomService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -110,7 +111,7 @@ public class GameServiceImpl implements IGameService {
         return Result.ok("所有成员已就位，开始游戏");
     }
 
-    private void gameProcess(String roomId) throws IOException {
+    private void gameProcess(String roomId) throws IOException, InterruptedException {
         int rounds = 1;
         while (true) {
             List<String> players = getPlayersByScoreAsc(roomId);
@@ -196,8 +197,8 @@ public class GameServiceImpl implements IGameService {
             // 踢出积分为0的玩家
             for (String userId : new ArrayList<>(players)) {
                 if (getUserScore(roomId, userId) <= 0) {
-                    removePlayer(roomId, userId);
                     WebSocket.sendMessageToRoom(userId + " 积分归零被踢出房间", roomId);
+                    removePlayer(roomId, userId);
                 }
             }
             if (getPlayersByScoreAsc(roomId).isEmpty()) {
@@ -208,7 +209,7 @@ public class GameServiceImpl implements IGameService {
         }
     }
 
-    private void endGame(String roomId, String message) {
+    private void endGame(String roomId, String message) throws InterruptedException {
         WebSocket.sendMessageToRoom(message, roomId);
         dismissRoom(roomId);
     }
@@ -367,8 +368,11 @@ public class GameServiceImpl implements IGameService {
         return roomObj == null ? null : roomObj.toString();
     }
 
-    private void dismissRoom(String roomId) {
+    private void dismissRoom(String roomId) throws InterruptedException {
         //todo 完善解散房间逻辑，实际上是调用room服务
+        ClientProxy clientProxy = new ClientProxy();
+        ILobbyRoomService lobbyRoomService = (ILobbyRoomService) clientProxy.getProxy(ILobbyRoomService.class);
+        lobbyRoomService.dismissRoom(roomId);
         WebSocket.sendMessageToRoom("房间已解散", roomId);
     }
 

@@ -1,7 +1,6 @@
 package org.example.gamecenter.service;
 
-import org.example.gamecenter.pojo.Result;
-import org.springframework.stereotype.Service;
+import org.example.common.pojo.Result;
 
 
 public interface IGameService  {

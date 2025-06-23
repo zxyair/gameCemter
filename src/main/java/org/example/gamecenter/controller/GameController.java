@@ -1,6 +1,6 @@
 package org.example.gamecenter.controller;
 
-import org.example.gamecenter.pojo.Result;
+import org.example.common.pojo.Result;
 import org.example.gamecenter.utils.GetUserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
